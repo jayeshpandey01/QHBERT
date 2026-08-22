@@ -1,0 +1,17 @@
+# QHBERT — local dev environment (CPU only)
+# Heavy BERT-embedding extraction and full-dataset training runs on Kaggle (GPU),
+# not here. This env is for: quantum circuit dev, unit tests, small experiments
+# (e.g. Iris VQC), and writing/validating src/ modules before they run on Kaggle.
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+pennylane
+scikit-learn
+numpy
+pandas
+matplotlib
+pytest
+
+# Uncomment when you actually need to run DistilBERT locally (not required for
+# the quantum-circuit-only milestones):
+# transformers
