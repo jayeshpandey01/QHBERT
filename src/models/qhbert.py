@@ -36,7 +36,7 @@ class QHBERTCore(nn.Module):
 
     def forward(self, cls_embedding: torch.Tensor) -> torch.Tensor:
         scaled = self.bridge(cls_embedding)
-        quantum_out = torch.stack([self.quantum(scaled[i]) for i in range(scaled.shape[0])])
+        quantum_out = self.quantum(scaled)
         return self.classifier(quantum_out)
 
 
