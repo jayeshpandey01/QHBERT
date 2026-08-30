@@ -60,3 +60,54 @@ class QHBERTFull(nn.Module):
             bert_out = self.bert(input_ids=input_ids, attention_mask=attention_mask)
         cls_embedding = bert_out.last_hidden_state[:, 0, :]
         return self.core(cls_embedding)
+
+
+class QHBERTModel(nn.Module):
+    """Configurable variant of QHBERTCore for the backend/qubit/layer ablation
+    sweep: wider bridge (more trainable params than QHBERTCore's fixed ~50K)
+    and a `backend` switch (PennyLane or Qiskit, via quantum_layers.build_quantum_layer)
+    so qubits/layers/backend/feature-map/ansatz can vary per run without
+    hand-editing a class. QHBERTCore stays the stable ~50K-param baseline;
+    this is the wider comparison model built alongside it.
+    """
+
+    def __init__(
+        self,
+        bert_dim: int = 768,
+        bridge_dims: tuple = (256, 64),
+        n_qubits: int = 8,
+        n_layers: int = 3,
+        backend: str = "pennylane",
+        head_dim: int = 64,
+        num_labels: int = 2,
+        dropout: float = 0.3,
+        quantum_kwargs: dict | None = None,
+    ):
+        super().__init__()
+        from src.models.quantum_layers import build_quantum_layer
+
+        bridge_layers = []
+        in_dim = bert_dim
+        for dim in bridge_dims:
+            bridge_layers += [nn.Linear(in_dim, dim), nn.LayerNorm(dim), nn.ReLU(), nn.Dropout(dropout)]
+            in_dim = dim
+        bridge_layers.append(nn.Linear(in_dim, n_qubits))
+        self.bridge = nn.Sequential(*bridge_layers)
+
+        self.quantum = build_quantum_layer(backend, n_qubits, n_layers, **(quantum_kwargs or {}))
+
+        self.classifier = nn.Sequential(
+            nn.Linear(n_qubits, head_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(head_dim, num_labels),
+        )
+
+    def forward(self, cls_embedding: torch.Tensor) -> torch.Tensor:
+        scaled = torch.tanh(self.bridge(cls_embedding)) * torch.pi
+        # batched call, not a per-sample Python loop: both TorchLayer and TorchConnector
+        # accept a full (batch, n_qubits) tensor directly, and looping multiplies each
+        # backward pass's cost by batch_size for no benefit (measured ~74x slower on
+        # PennyLane at 12 qubits/3 layers/batch 32 — see quantum_layers.py).
+        quantum_out = self.quantum(scaled)
+        return self.classifier(quantum_out)

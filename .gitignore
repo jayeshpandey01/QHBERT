@@ -1,6 +1,9 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+*.zip
+dataset/
 data/raw/
 data/processed/
 data/splits/
@@ -9,3 +12,5 @@ experiments/*/
 *.ckpt
 wandb/
 .ipynb_checkpoints/
+rough/
+.claude/

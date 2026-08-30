@@ -21,14 +21,14 @@ dev = qml.device("default.qubit", wires=n_qubits)
 @qml.qnode(dev, interface="torch", diff_method="parameter-shift")
 def vqc(inputs, weights):
     qml.AngleEmbedding(inputs, wires=range(n_qubits), rotation="Y")
-    qml.BasicEntanglerLayers(weights, wires=range(n_qubits))
+    qml.StronglyEntanglingLayers(weights, wires=range(n_qubits))
     return qml.expval(qml.PauliZ(0))
 
 
 class IrisVQC(nn.Module):
     def __init__(self, n_layers: int = 3):
         super().__init__()
-        weight_shapes = {"weights": (n_layers, n_qubits)}
+        weight_shapes = {"weights": (n_layers, n_qubits, 3)}
         self.qlayer = qml.qnn.TorchLayer(vqc, weight_shapes)
         self.bias = nn.Parameter(torch.tensor(0.0))
 

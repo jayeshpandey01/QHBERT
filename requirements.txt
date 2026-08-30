@@ -1,4 +1,9 @@
-# QHBERT — local dev environment (CPU only)
+# Two tracks — see README for the full explanation:
+#   Track A: QHBERT (hybrid QML) — quantum classifier head on frozen DistilBERT
+#            embeddings. Evaluated on LIAR, ISOT, WELFake.
+#   Track B: true QNLP (DisCoCat/lambeq) — grammar-driven quantum circuits,
+#            no classical transformer. LIAR only (text-length constraint).
+#
 # Heavy BERT-embedding extraction and full-dataset training runs on Kaggle (GPU),
 # not here. This env is for: quantum circuit dev, unit tests, small experiments
 # (e.g. Iris VQC), and writing/validating src/ modules before they run on Kaggle.
@@ -6,6 +11,9 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch
 pennylane
+qiskit
+qiskit-machine-learning
+lambeq
 scikit-learn
 numpy
 pandas

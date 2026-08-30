@@ -57,20 +57,89 @@ Complete milestone plan: [implementation_milestone.md](implementation_milestone.
 
 ## Architecture
 
+### End-to-end pipeline
+
 ```mermaid
 flowchart LR
-    A["News Article\n(text)"] --> B["DistilBERT\n(frozen, 66M params)"]
-    B --> C["CLS embedding\n768-dim"]
-    C --> D["Bridge Network\n768 → 64 → 8\n+ LayerNorm + ReLU"]
-    D --> E["Quantum Circuit\n8 qubits, 3 layers\nAngleEmbed → CNOT → RY/RZ"]
-    E --> F["Zero-Noise\nExtrapolation"]
-    F --> G["Classifier Head\n8 → 16 → 2"]
-    G --> H["REAL / FAKE\n+ confidence"]
+    A["News\nArticle"] --> B["DistilBERT\n(frozen, 66M)"]
+    B --> C["Bridge Net\n768→64→8"]
+    C --> D["Quantum Circuit\n8 qubits × 3 layers"]
+    D --> E["ZNE\n(Mitiq)"]
+    E --> F["Output Head\n8→16→2"]
+    F --> G["REAL/FAKE\n+ confidence"]
+    D -.explains.-> H["Circuit\nvisualization"]
 ```
 
-The only trainable components are the bridge network, the quantum circuit's
-rotation angles, and the classifier head — **~50,090 parameters total**,
-verified by [tests/test_model.py](tests/test_model.py).
+| Stage | What happens |
+|---|---|
+| DistilBERT (frozen) | Tokenize (max_length 512) → 66M-param forward pass → take the CLS embedding (768-dim). No gradient. |
+| Bridge network | `Linear(768→64) → LayerNorm → ReLU → Dropout → Linear(64→8) → tanh(x)·π` — scales to `[-π, π]` for angle encoding. |
+| Quantum circuit | `AngleEmbedding` (RY) → 3× [ring CNOT entangler → RY/RZ rotations] → measure `⟨Zᵢ⟩` on all 8 qubits. |
+| ZNE (Mitiq) | Runs the circuit at noise ×1, ×2, ×3 and Richardson-extrapolates to a zero-noise estimate. |
+| Output head | `Linear(8→16) → ReLU → Dropout → Linear(16→2) → Softmax`. |
+
+### Quantum circuit ansatz (one layer of three)
+
+```mermaid
+flowchart LR
+    subgraph ENC["Data Encoding"]
+        direction TB
+        Q0["q0 — RY(x₀)"]
+        Q1["q1 — RY(x₁)"]
+        Q2["q2 — RY(x₂)"]
+        Q3["..."]
+        Q7["q7 — RY(x₇)"]
+    end
+
+    subgraph ENT["Ring Entangler"]
+        direction TB
+        E1["CNOT(0,1)"]
+        E2["CNOT(1,2)"]
+        E3["..."]
+        E4["CNOT(7,0)"]
+    end
+
+    subgraph VAR["Variational Rotations"]
+        direction TB
+        R0["RY(θ₀) RZ(φ₀)"]
+        R1["RY(θ₁) RZ(φ₁)"]
+        R2["..."]
+        R7["RY(θ₇) RZ(φ₇)"]
+    end
+
+    subgraph MEAS["Measurement"]
+        direction TB
+        M0["⟨Z₀⟩"]
+        M1["⟨Z₁⟩"]
+        M2["..."]
+        M7["⟨Z₇⟩"]
+    end
+
+    ENC --> ENT --> VAR -->|"× 3 layers total"| ENT
+    VAR --> MEAS
+```
+
+| Design choice | Reason |
+|---|---|
+| Angle embedding | Natural fit for small classical feature vectors → qubit rotations |
+| Ring CNOT topology | Matches IBM Eagle connectivity; avoids costly SWAP gates |
+| 3 layers | Enough expressivity while avoiding barren plateaus at low depth |
+| RY + RZ per qubit | 2 degrees of freedom per qubit for near-maximal expressibility |
+| Pauli-Z measurement | Maps each qubit to [-1, +1] for the classical head |
+
+### Component parameter budget
+
+| Component | Technology | Parameters | Trainable? |
+|---|---|---|---|
+| Tokenizer | DistilBERT-base-uncased | 0 | — |
+| Encoder | DistilBERT | 66M | ❌ frozen |
+| Bridge network | Linear + LayerNorm | ~49,864 | ✅ |
+| Quantum circuit | PennyLane, 8 qubits × 3 layers | 48 | ✅ |
+| Error mitigation | Mitiq ZNE | 0 | — |
+| Output head | Linear | 178 | ✅ |
+| **Total trainable** | | **~50,090** | vs. BERT's 110M → **~2200× smaller** |
+
+Verified directly by [tests/test_model.py](tests/test_model.py) (`test_qhbert_core_param_count`).
 
 ---
 
@@ -128,7 +197,7 @@ python -m venv .venv
 ## Roadmap
 
 - [x] **M0** — Environment setup & quantum circuit sanity check
-- [ ] **M1** — VQC on Iris (>85% accuracy)
+- [x] **M1** — VQC on Iris (100% accuracy, target was >85%)
 - [ ] **M2** — Literature review write-up
 - [ ] **M3** — Classical baselines (TF-IDF+SVM, DistilBERT fine-tune)
 - [x] **M4** — QHBERT architecture (forward + backward pass verified)

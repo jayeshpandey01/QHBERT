@@ -1,0 +1,170 @@
+{
+  "dataset": "isot",
+  "n_components": 8,
+  "vqc": {
+    "train_size": 1000,
+    "test_size": 300,
+    "train_acc": 0.672,
+    "test_acc": 0.6833333333333333,
+    "train_time_sec": 1304.0229575634003,
+    "feature_map": "zz_feature_map(reps=1)",
+    "ansatz": "real_amplitudes(reps=3)",
+    "optimizer": "COBYLA(maxiter=100)"
+  },
+  "svc_reduced": {
+    "train_size": 1000,
+    "test_size": 300,
+    "train_acc": 0.933,
+    "test_acc": 0.9233333333333333
+  },
+  "svc_full_tfidf": {
+    "train_size": 35918,
+    "test_size": 8980,
+    "test_acc": 0.993652561247216,
+    "test_f1": 0.9933558689823989,
+    "test_precision": 0.9920838183934808,
+    "test_recall": 0.9946311858076564
+  },
+  "tier2_stage_a_sweep": [
+    {
+      "feature_map": "pauli",
+      "ansatz": "real_amplitudes",
+      "reps": 3,
+      "n_qubits": 8,
+      "test_acc": 0.6666666666666666,
+      "n_params": 32,
+      "fit_time_sec": 578.3090567588806
+    },
+    {
+      "feature_map": "zz",
+      "ansatz": "real_amplitudes",
+      "reps": 2,
+      "n_qubits": 8,
+      "test_acc": 0.6566666666666666,
+      "n_params": 24,
+      "fit_time_sec": 554.9773619174957
+    },
+    {
+      "feature_map": "zz",
+      "ansatz": "real_amplitudes",
+      "reps": 3,
+      "n_qubits": 8,
+      "test_acc": 0.65,
+      "n_params": 32,
+      "fit_time_sec": 597.8853747844696
+    },
+    {
+      "feature_map": "pauli",
+      "ansatz": "efficient_su2",
+      "reps": 2,
+      "n_qubits": 8,
+      "test_acc": 0.6433333333333333,
+      "n_params": 48,
+      "fit_time_sec": 609.1789667606354
+    },
+    {
+      "feature_map": "zz",
+      "ansatz": "efficient_su2",
+      "reps": 2,
+      "n_qubits": 8,
+      "test_acc": 0.6333333333333333,
+      "n_params": 48,
+      "fit_time_sec": 604.13356757164
+    },
+    {
+      "feature_map": "zz",
+      "ansatz": "efficient_su2",
+      "reps": 1,
+      "n_qubits": 8,
+      "test_acc": 0.61,
+      "n_params": 32,
+      "fit_time_sec": 576.0080025196075
+    },
+    {
+      "feature_map": "pauli",
+      "ansatz": "real_amplitudes",
+      "reps": 1,
+      "n_qubits": 8,
+      "test_acc": 0.5933333333333334,
+      "n_params": 16,
+      "fit_time_sec": 511.83199167251587
+    },
+    {
+      "feature_map": "pauli",
+      "ansatz": "efficient_su2",
+      "reps": 1,
+      "n_qubits": 8,
+      "test_acc": 0.5833333333333334,
+      "n_params": 32,
+      "fit_time_sec": 551.8874859809875
+    },
+    {
+      "feature_map": "zz",
+      "ansatz": "efficient_su2",
+      "reps": 3,
+      "n_qubits": 8,
+      "test_acc": 0.5733333333333334,
+      "n_params": 64,
+      "fit_time_sec": 864.9705843925476
+    },
+    {
+      "feature_map": "pauli",
+      "ansatz": "efficient_su2",
+      "reps": 3,
+      "n_qubits": 8,
+      "test_acc": 0.5666666666666667,
+      "n_params": 64,
+      "fit_time_sec": 861.7970752716064
+    },
+    {
+      "feature_map": "zz",
+      "ansatz": "real_amplitudes",
+      "reps": 1,
+      "n_qubits": 8,
+      "test_acc": 0.55,
+      "n_params": 16,
+      "fit_time_sec": 479.70089983940125
+    },
+    {
+      "feature_map": "pauli",
+      "ansatz": "real_amplitudes",
+      "reps": 2,
+      "n_qubits": 8,
+      "test_acc": 0.5366666666666666,
+      "n_params": 24,
+      "fit_time_sec": 544.9637603759766
+    }
+  ],
+  "tier2_stage_b_qubit_sweep": [
+    {
+      "n_qubits": 4,
+      "feature_map": "pauli",
+      "ansatz": "real_amplitudes",
+      "reps": 3,
+      "test_acc": 0.8233333333333334,
+      "n_params": 16,
+      "maxiter": 100,
+      "fit_time_sec": 564.3002316951752
+    },
+    {
+      "n_qubits": 8,
+      "feature_map": "pauli",
+      "ansatz": "real_amplitudes",
+      "reps": 3,
+      "test_acc": 0.54,
+      "n_params": 32,
+      "maxiter": 100,
+      "fit_time_sec": 1161.2072925567627
+    },
+    {
+      "n_qubits": 12,
+      "feature_map": "pauli",
+      "ansatz": "real_amplitudes",
+      "reps": 3,
+      "test_acc": 0.5833333333333334,
+      "n_params": 48,
+      "maxiter": 100,
+      "fit_time_sec": 6207.319475412369
+    }
+  ]
+}
